@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: library-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alimohamed22233aaa-ai/library-gitops.git
+    targetRevision: main
+    path: helm-chart/library
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: library
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
