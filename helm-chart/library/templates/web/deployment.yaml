@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: web
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: {{ .Values.db.image }}
+          command: ["sh", "-c", "until pg_isready -h db -p {{ .Values.db.service.port }}; do echo waiting for db; sleep 2; done"]
+      containers:
+        - name: web
+          image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          imagePullPolicy: {{ .Values.web.image.pullPolicy }}
+          command: {{ toJson .Values.web.command }}
+          ports:
+            - containerPort: {{ .Values.web.containerPort }}
+          env:
+            {{- range $k := list "POSTGRES_USER" "POSTGRES_PASSWORD" "POSTGRES_DB" "SECRET_KEY" }}
+            - name: {{ $k }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "library.secretName" $ }}
+                  key: {{ $k }}
+            {{- end }}
+            - name: DATABASE_URL
+              value: postgresql+psycopg2://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@db:{{ .Values.db.service.port }}/$(POSTGRES_DB)
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.web.probePath }}
+              port: {{ .Values.web.containerPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.web.probePath }}
+              port: {{ .Values.web.containerPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}

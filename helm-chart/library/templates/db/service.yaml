@@ -1,0 +1,13 @@
+# الاسم "db" ثابت لأن الـ web بيتصل بيه (نفس الاسم اللي كان في docker-compose)
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    app: db
+  ports:
+    - port: {{ .Values.db.service.port }}
+      targetPort: {{ .Values.db.service.port }}

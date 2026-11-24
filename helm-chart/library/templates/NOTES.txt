@@ -1,0 +1,4 @@
+Library app installed in namespace {{ .Release.Namespace }}.
+
+Web: http://<node-ip>:{{ .Values.web.service.nodePort }}
+Check: kubectl -n {{ .Release.Namespace }} get pods

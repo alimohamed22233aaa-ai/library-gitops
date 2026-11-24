@@ -1,0 +1,16 @@
+{{- if .Values.db.persistence.createPV }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.db.persistence.pvName }}
+spec:
+  capacity:
+    storage: {{ .Values.db.persistence.size }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: {{ .Values.db.persistence.reclaimPolicy }}
+  storageClassName: {{ .Values.db.persistence.storageClassName }}
+  hostPath:
+    path: {{ .Values.db.persistence.hostPath }}
+    type: DirectoryOrCreate
+{{- end }}
