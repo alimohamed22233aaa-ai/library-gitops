@@ -8,13 +8,14 @@ spec:
   source:
     repoURL: https://github.com/alimohamed22233aaa-ai/library-gitops.git
     targetRevision: main
-    path: applications/apps       
+    path: applications/apps
     directory:
       recurse: true
-      include: '*.yml'          
+      include: '*.yml'
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd             
+    namespace: argocd
+  syncPolicy:
     automated:
       prune: true
       selfHeal: true
